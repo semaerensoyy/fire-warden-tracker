@@ -45,7 +45,7 @@ jobs:
         working-directory: ./frontend
         run: |
           pwd
-          ls -la
+          Get-ChildItem -Force
           cat package.json
 
   deploy:
