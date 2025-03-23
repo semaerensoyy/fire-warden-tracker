@@ -76,4 +76,4 @@ jobs:
         with:
           app-name: 'firewardentracker'
           slot-name: 'Production'
-          package: ./frontend/build
+          package: node-app
