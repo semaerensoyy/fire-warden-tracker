@@ -38,6 +38,13 @@ jobs:
         with:
           name: node-app
           path: ./frontend
+          
+      - name: Debug - List current directory
+        working-directory: ./frontend
+        run: |
+          pwd
+          ls -la
+          cat package.json
 
   deploy:
     runs-on: ubuntu-latest
