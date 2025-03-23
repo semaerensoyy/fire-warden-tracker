@@ -39,7 +39,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: node-app
-          path: ./frontend
+          path: ./frontend/build
           
       - name: Debug - List current directory
         working-directory: ./frontend
@@ -76,4 +76,4 @@ jobs:
         with:
           app-name: 'firewardentracker'
           slot-name: 'Production'
-          package: ./frontend
+          package: ./frontend/build
