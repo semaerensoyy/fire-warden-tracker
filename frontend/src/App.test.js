@@ -8,6 +8,7 @@ test('renders Fire Warden Tracker header', () => {
       <App />
     </MemoryRouter>
   );
+  // Look for the header text "Fire Warden Tracker"
   const headerElement = screen.getByText(/fire warden tracker/i);
   expect(headerElement).toBeInTheDocument();
 });
