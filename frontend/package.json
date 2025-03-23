@@ -27,6 +27,11 @@
     "format": "prettier --write 'src/**/*.{js,jsx,css,md}'",
     "prepare": "husky install"
   },
+  "jest": {
+    "transformIgnorePatterns": [
+      "/node_modules/(?!axios)"
+    ]
+  },
   "eslintConfig": {
     "extends": [
       "react-app",
