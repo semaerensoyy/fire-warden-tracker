@@ -71,9 +71,10 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_4999D135CC6C461BAF1085FCA884D514 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_081FD75A297C488EA380757279CBBDE7 }}
 
-      - name: Deploy to Azure Web App
+      - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v3
+        id: deploy-to-webapp
         with:
           app-name: 'firewardentracker'
           slot-name: 'Production'
-          package: ./frontend/build
+          package: .
