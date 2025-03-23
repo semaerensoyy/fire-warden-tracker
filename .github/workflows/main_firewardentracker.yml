@@ -45,7 +45,7 @@ jobs:
         working-directory: ./frontend
         run: |
           pwd
-          ls -la
+          Get-ChildItem -Force
           cat package.json
 
   deploy:
@@ -78,4 +78,3 @@ jobs:
           app-name: 'firewardentracker'
           slot-name: 'Production'
           package: .
-          
