@@ -50,7 +50,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}-v2
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}-v3
 
   deploy:
     runs-on: ubuntu-latest
