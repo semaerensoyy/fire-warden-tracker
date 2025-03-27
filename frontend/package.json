@@ -19,14 +19,14 @@
     "prettier": "^3.0.3"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "dev": "react-scripts start",
+    "start": "cross-env NODE_OPTIONS=--openssl-legacy-provider react-scripts start",
+    "dev": "cross-env NODE_OPTIONS=--openssl-legacy-provider react-scripts start",
     "build": "cross-env NODE_OPTIONS=--openssl-legacy-provider CI=true react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "lint": "eslint 'src/**/*.js' --fix",
     "format": "prettier --write 'src/**/*.{js,jsx,css,md}'"
-},
+  },
 
   "jest": {
     "transformIgnorePatterns": [
