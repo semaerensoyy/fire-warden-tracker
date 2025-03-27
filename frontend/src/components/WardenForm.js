@@ -50,7 +50,7 @@ const WardenForm = () => {
     setError(null);
     try {
       const token = localStorage.getItem("token");
-      await axios.post("http://localhost:5001/logs", warden, {
+      await axios.post("${process.env.REACT_APP_API_URL}/logs", warden, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setSuccessMessage("Warden location logged successfully!");
