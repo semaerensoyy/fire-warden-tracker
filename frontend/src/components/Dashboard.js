@@ -22,7 +22,7 @@ const Dashboard = () => {
 
   const fetchLogs = async () => {
     try {
-      const response = await axios.get("${process.env.REACT_APP_API_URL}/logs");
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/logs`);
       setLogs(response.data);
     } catch (err) {
       console.error("Error fetching logs:", err);
@@ -57,7 +57,7 @@ const Dashboard = () => {
   const updateLog = async () => {
     try {
       const { id, staff_number, first_name, last_name, location } = editingLog;
-      await axios.put(`${process.env.REACT_APP_API_URL}/${id}`, {
+      await axios.put(`${process.env.REACT_APP_API_URL}/logs/${id}`, {
         staff_number,
         first_name,
         last_name,
