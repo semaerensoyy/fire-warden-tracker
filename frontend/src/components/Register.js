@@ -25,7 +25,7 @@ const Register = () => {
       setError("Please enter first and last name first.");
       return;
     }
-    setError(null);
+    setError(null);   
     setLoading(true);
     try {
       const response = await axios.get(`${process.env.REACT_APP_API_URL}/generate-staff-number`);

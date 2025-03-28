@@ -7,9 +7,35 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 
-const app = express();
+////////////////////////
+const cors = require("cors");
 
-app.use(cors({ origin: "https://firewardentracker-apggb8hzfkfsbjf3.uksouth-01.azurewebsites.net", credentials: true }));
+// Define allowed origins:
+const allowedOrigins = [
+  "http://localhost:3000",                  // Local development
+  "https://firewardentracker-apggb8hzfkfsbjf3.uksouth-01.azurewebsites.net"  // Replace with your production frontend URL if applicable
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    // If no origin is provided (e.g., from a tool like Postman), allow it.
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) === -1) {
+      console.error(`Origin ${origin} not allowed by CORS`);
+      return callback(new Error("Not allowed by CORS"), false);
+    }
+    return callback(null, true);
+  },
+  credentials: true
+}));
+
+
+const app = express();
+//////////////////////////
+//app.use(cors({ origin: "https://firewardentracker-apggb8hzfkfsbjf3.uksouth-01.azurewebsites.net", credentials: true }));
+
+
+
 app.use(express.json());
 app.use(cookieParser());
 
