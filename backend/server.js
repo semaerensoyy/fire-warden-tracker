@@ -6,9 +6,11 @@ const sql = require("mssql");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
+
+const app = express();
 ////////////////
 const allowedOrigins = [
-  "http://localhost:3000",                   // Local development
+  "http://localhost:3002",                   // Local development
   "https://firewardentracker-apggb8hzfkfsbjf3.uksouth-01.azurewebsites.net"    // Replace with your actual frontend URL in production
 ];
 
@@ -25,9 +27,6 @@ app.use(cors({
   credentials: true
 }));
 /////////////////////
-
-const app = express();
-
 //app.use(cors({ origin: "https://firewardentracker-apggb8hzfkfsbjf3.uksouth-01.azurewebsites.net", credentials: true }));
 
 app.use(express.json());
