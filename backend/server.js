@@ -6,10 +6,29 @@ const sql = require("mssql");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
+////////////////
+const allowedOrigins = [
+  "http://localhost:3000",                   // Local development
+  "https://firewardentracker-apggb8hzfkfsbjf3.uksouth-01.azurewebsites.net"    // Replace with your actual frontend URL in production
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) === -1) {
+      console.error(`CORS error: Origin ${origin} not allowed.`);
+      return callback(new Error("Not allowed by CORS"), false);
+    }
+    return callback(null, true);
+  },
+  credentials: true
+}));
+/////////////////////
 
 const app = express();
 
-app.use(cors({ origin: "https://firewardentracker-apggb8hzfkfsbjf3.uksouth-01.azurewebsites.net", credentials: true }));
+//app.use(cors({ origin: "https://firewardentracker-apggb8hzfkfsbjf3.uksouth-01.azurewebsites.net", credentials: true }));
 
 app.use(express.json());
 app.use(cookieParser());
@@ -204,7 +223,7 @@ app.delete("/logs/:id", async (req, res) => {
 });
 
 // Start the Server
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 5002;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
