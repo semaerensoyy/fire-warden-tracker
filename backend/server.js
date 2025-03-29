@@ -10,7 +10,7 @@ const cookieParser = require("cookie-parser");
 const app = express();
 ////////////////
 const allowedOrigins = [
-  "http://localhost:3002",                   // Local development
+  "http://localhost:3000",                   // Local development
   "https://firewardentracker-apggb8hzfkfsbjf3.uksouth-01.azurewebsites.net"    // Replace with your actual frontend URL in production
 ];
 
@@ -20,7 +20,7 @@ app.use(cors({
     if (!origin) return callback(null, true);
     if (allowedOrigins.indexOf(origin) === -1) {
       console.error(`CORS error: Origin ${origin} not allowed.`);
-      return callback(new Error("Not allowed by CORS"), false);
+     return callback(new Error("Not allowed by CORS"), false);
     }
     return callback(null, true);
   },
