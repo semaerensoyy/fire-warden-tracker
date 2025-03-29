@@ -16,6 +16,11 @@ const App = () => {
     }
   }, []);
 
+  app.use(cors({
+    origin: "https://firewardentracker-apggb8hzfkfsbjf3.uksouth-01.azurewebsites.net",
+    credentials: true
+  }));
+
   const handleLogin = (token) => {
     setIsAuthenticated(true);
   };
