@@ -1,6 +1,7 @@
-// Load environment variables (for local development and production)
+// Load environment variables
 require("dotenv").config();
 require("express-async-errors");
+
 const express = require("express");
 const cors = require("cors");
 const sql = require("mssql");
@@ -22,17 +23,17 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
-// In production, serve static files from the React build
+// Serve static files from the React build folder in production
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "build")));
 }
 
-// Azure SQL connection configuration using environment variables
+// Azure SQL connection configuration from environment variables
 const config = {
-  user: process.env.DB_USER,
-  password: process.env.DB_PASS,
-  server: process.env.DB_SERVER,
-  database: process.env.DB_NAME,
+  user: process.env.DB_USER,               // e.g., s.erensoy.22
+  password: process.env.DB_PASS,           // e.g., 04092002Sa
+  server: process.env.DB_SERVER,           // e.g., firewardenapp-server.database.windows.net
+  database: process.env.DB_NAME,           // e.g., firewarden_db
   port: Number(process.env.SQL_PORT) || 1433,
   options: {
     encrypt: true,
@@ -52,7 +53,7 @@ async function connectDB() {
 }
 connectDB();
 
-// Middleware to ensure DB is connected
+// Middleware to check DB connectivity
 app.use((req, res, next) => {
   if (!pool) return res.status(503).json({ error: "Database not connected" });
   next();
@@ -105,7 +106,7 @@ app.post("/register", async (req, res) => {
   }
 });
 
-// Authenticate user and return token with user info
+// Login endpoint
 app.post("/login", async (req, res) => {
   const { username, password } = req.body;
   if (!username || !password)
@@ -137,7 +138,7 @@ app.post("/login", async (req, res) => {
   }
 });
 
-// Retrieve all logged locations
+// Retrieve all logs
 app.get("/logs", async (req, res) => {
   try {
     const result = await pool.request().query(`
@@ -152,7 +153,7 @@ app.get("/logs", async (req, res) => {
   }
 });
 
-// Store a new log entry
+// Log a new location entry
 app.post("/logs", async (req, res) => {
   const { staffNumber, firstName, lastName, location } = req.body;
   if (!staffNumber || !firstName || !lastName || !location) {
@@ -219,14 +220,14 @@ app.delete("/logs/:id", async (req, res) => {
   }
 });
 
-// For production: Catch-all route to serve the React app's index.html
+// Catch-all: Serve React's index.html for any other route in production
 if (process.env.NODE_ENV === "production") {
   app.get("*", (req, res) => {
     res.sendFile(path.join(__dirname, "build", "index.html"));
   });
 }
 
-// Start the server – in production, we require process.env.PORT to be set!
+// Ensure we have a PORT in production (Azure will set this automatically)
 if (!process.env.PORT) {
   console.error("Error: PORT environment variable not set in production.");
   process.exit(1);
