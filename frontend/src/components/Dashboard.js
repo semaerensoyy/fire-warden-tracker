@@ -22,7 +22,7 @@ const Dashboard = () => {
 
   const fetchLogs = async () => {
     try {
-      const response = await axios.get(`https://firewardentracker-apggb8hzfkfsbjf3.uksouth-01.azurewebsites.net/logs`);
+      const response = await axios.get("https://firewardentracker-apggb8hzfkfsbjf3.uksouth-01.azurewebsites.net/logs");
       setLogs(response.data);
     } catch (err) {
       console.error("Error fetching logs:", err);
@@ -33,9 +33,10 @@ const Dashboard = () => {
   useEffect(() => {
     fetchLogs();
   }, []);
+
   const deleteLog = async (id) => {
     try {
-      await axios.delete(`https://firewardentracker-apggb8hzfkfsbjf3.uksouth-01.azurewebsites.net/logs/${id}`);
+      await axios.delete("https://firewardentracker-apggb8hzfkfsbjf3.uksouth-01.azurewebsites.net/logs/" + id);
       setLogs(logs.filter((log) => log.id !== id));
       setSuccessMessage("Log deleted successfully!");
       setTimeout(() => setSuccessMessage(null), 3000);
@@ -55,8 +56,10 @@ const Dashboard = () => {
 
   const updateLog = async () => {
     try {
-      const { id, staff_number, first_name, last_name, location } = editingLog;
-      await axios.put(`https://firewardentracker-apggb8hzfkfsbjf3.uksouth-01.azurewebsites.net/logs/${id}`, {
+      // Destructure properties except for id (we'll get id directly)
+      const { staff_number, first_name, last_name, location } = editingLog;
+      const logId = editingLog.id; // get id directly from editingLog
+      await axios.put("https://firewardentracker-apggb8hzfkfsbjf3.uksouth-01.azurewebsites.net/logs/" + logId, {
         staff_number,
         first_name,
         last_name,

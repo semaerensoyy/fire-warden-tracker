@@ -28,7 +28,7 @@ const Register = () => {
     setError(null);   
     setLoading(true);
     try {
-      const response = await axios.get(`https://firewardentracker-apggb8hzfkfsbjf3.uksouth-01.azurewebsites.net/generate-staff-number`);
+      const response = await axios.get("https://firewardentracker-apggb8hzfkfsbjf3.uksouth-01.azurewebsites.net/generate-staff-number");
       const staffNumber = response.data.staffNumber;
       setGeneratedValues({
         staffNumber,
@@ -54,7 +54,7 @@ const Register = () => {
         staffNumber: generatedValues.staffNumber,
         username: generatedValues.username
       };
-      await axios.post(`https://firewardentracker-apggb8hzfkfsbjf3.uksouth-01.azurewebsites.net/register`, registrationData);
+      await axios.post("https://firewardentracker-apggb8hzfkfsbjf3.uksouth-01.azurewebsites.net/register", registrationData);
       alert("Registration successful!");
       navigate("/login");
     } catch (err) {
