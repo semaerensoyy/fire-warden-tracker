@@ -12,6 +12,11 @@ const path = require("path");
 
 const app = express();
 
+// Test endpoint to confirm Node.js is running
+app.get('/test', (req, res) => {
+  res.send('Node.js backend is running!');
+});
+
 // CORS configuration: allow requests from your public domain
 app.use(
   cors({
