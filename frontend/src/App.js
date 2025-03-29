@@ -60,11 +60,36 @@ const App = () => {
         </div>
         <div className="col-md-10 p-4">
           <Routes>
-            <Route path="/" element={isAuthenticated ? <Navigate to="/warden-form" /> : <Navigate to="/login" />} />
-            <Route path="/login" element={isAuthenticated ? <Navigate to="/warden-form" /> : <Login onLogin={handleLogin} />} />
-            <Route path="/register" element={isAuthenticated ? <Navigate to="/warden-form" /> : <Register />} />
-            <Route path="/warden-form" element={isAuthenticated ? <WardenForm /> : <Navigate to="/login" />} />
-            <Route path="/dashboard" element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" />} />
+            <Route
+              path="/"
+              element={
+                isAuthenticated ? <Navigate to="/warden-form" /> : <Navigate to="/login" />
+              }
+            />
+            <Route
+              path="/login"
+              element={
+                isAuthenticated ? <Navigate to="/warden-form" /> : <Login onLogin={handleLogin} />
+              }
+            />
+            <Route
+              path="/register"
+              element={
+                isAuthenticated ? <Navigate to="/warden-form" /> : <Register />
+              }
+            />
+            <Route
+              path="/warden-form"
+              element={
+                isAuthenticated ? <WardenForm /> : <Navigate to="/login" />
+              }
+            />
+            <Route
+              path="/dashboard"
+              element={
+                isAuthenticated ? <Dashboard /> : <Navigate to="/login" />
+              }
+            />
           </Routes>
         </div>
       </div>
