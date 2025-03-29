@@ -214,7 +214,22 @@ app.delete("/logs/:id", async (req, res) => {
 });
 
 // Start the Server using Azure's PORT if provided; otherwise, default to 5002 (for local development)
-const PORT = process.env.PORT || 5002;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+//const PORT = process.env.PORT || 5002;
+//app.listen(PORT, () => {
+//  console.log(`Server running on port ${PORT}`);
+//});
+
+if (process.env.NODE_ENV === 'production') {
+  if (!process.env.PORT) {
+    console.error('Error: PORT environment variable is not set in production.');
+    process.exit(1);
+  }
+  app.listen(process.env.PORT, () => {
+    console.log(`Server running on port ${process.env.PORT}`);
+  });
+} else {
+  const PORT = process.env.PORT || 5002;
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
