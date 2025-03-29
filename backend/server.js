@@ -1,5 +1,9 @@
+// Only load .env variables when not in production
+if (process.env.NODE_ENV !== "production") {
+  require("dotenv").config();
+}
+
 require("express-async-errors");
-require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const sql = require("mssql");
@@ -8,36 +12,22 @@ const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 
 const app = express();
-/////////////////////////////////////
-//const allowedOrigins = [
-//  "http://localhost:3000",
-//  "https://firewardentracker-apggb8hzfkfsbjf3.uksouth-01.azurewebsites.net"
-//];
 
-//app.use(cors({
-//  origin: function (origin, callback) {
-//    // Allow requests with no origin (like mobile apps or curl)
-//    if (!origin) return callback(null, true);
-//    if (allowedOrigins.indexOf(origin) === -1) {
-//      console.error(`CORS error: Origin ${origin} not allowed.`);
-//      return callback(new Error("Not allowed by CORS"), false);
-//    }
-//    return callback(null, true);
-//  },
-//  credentials: true
-//}));
-///////////////////////////////////////////////
-app.use(cors({ origin: "https://firewardentracker-apggb8hzfkfsbjf3.uksouth-01.azurewebsites.net", credentials: true }));
+// CORS is configured here to allow your frontend's public URL access
+app.use(cors({
+  origin: "https://firewardentracker-apggb8hzfkfsbjf3.uksouth-01.azurewebsites.net",
+  credentials: true
+}));
 
 app.use(express.json());
 app.use(cookieParser());
 
 // Azure SQL connection configuration
 const config = {
-  user: process.env.DB_USER,           
-  password: process.env.DB_PASS,      
-  server: process.env.DB_SERVER,        
-  database: process.env.DB_NAME,     
+  user: process.env.DB_USER,
+  password: process.env.DB_PASS,
+  server: process.env.DB_SERVER,
+  database: process.env.DB_NAME,
   port: Number(process.env.SQL_PORT) || 1433,
   options: {
     encrypt: true,
@@ -223,7 +213,7 @@ app.delete("/logs/:id", async (req, res) => {
   }
 });
 
-// Start the Server using Azure's PORT if provided
+// Start the Server using Azure's PORT if provided; otherwise, default to 5002 (for local development)
 const PORT = process.env.PORT || 5002;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
