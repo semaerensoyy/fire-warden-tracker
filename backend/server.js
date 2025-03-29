@@ -1,8 +1,5 @@
-// Only load .env variables when not in production
-if (process.env.NODE_ENV !== "production") {
-  require("dotenv").config();
-}
-
+// Load environment variables (for local development and production)
+require("dotenv").config();
 require("express-async-errors");
 const express = require("express");
 const cors = require("cors");
@@ -10,19 +7,27 @@ const sql = require("mssql");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
+const path = require("path");
 
 const app = express();
 
-// CORS is configured here to allow your frontend's public URL access
-app.use(cors({
-  origin: "https://firewardentracker-apggb8hzfkfsbjf3.uksouth-01.azurewebsites.net",
-  credentials: true
-}));
+// CORS configuration: allow requests from your public domain
+app.use(
+  cors({
+    origin: "https://firewardentracker-apggb8hzfkfsbjf3.uksouth-01.azurewebsites.net",
+    credentials: true,
+  })
+);
 
 app.use(express.json());
 app.use(cookieParser());
 
-// Azure SQL connection configuration
+// In production, serve static files from the React build
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, "build")));
+}
+
+// Azure SQL connection configuration using environment variables
 const config = {
   user: process.env.DB_USER,
   password: process.env.DB_PASS,
@@ -42,7 +47,7 @@ async function connectDB() {
     console.log("Connected to Azure SQL Database");
   } catch (error) {
     console.error("Database connection error:", error);
-    process.exit(1); // Exit if the DB connection fails
+    process.exit(1);
   }
 }
 connectDB();
@@ -52,6 +57,8 @@ app.use((req, res, next) => {
   if (!pool) return res.status(503).json({ error: "Database not connected" });
   next();
 });
+
+// --- API Endpoints ---
 
 // Generate a unique 4-digit staff number
 app.get("/generate-staff-number", async (req, res) => {
@@ -115,7 +122,6 @@ app.post("/login", async (req, res) => {
     if (!match) {
       return res.status(401).json({ error: "Invalid username or password." });
     }
-    // Use staff_number as unique identifier if no separate id exists
     const token = jwt.sign({ userId: user.staff_number }, process.env.JWT_SECRET, { expiresIn: "1h" });
     res.json({
       token,
@@ -213,23 +219,19 @@ app.delete("/logs/:id", async (req, res) => {
   }
 });
 
-// Start the Server using Azure's PORT if provided; otherwise, default to 5002 (for local development)
-//const PORT = process.env.PORT || 5002;
-//app.listen(PORT, () => {
-//  console.log(`Server running on port ${PORT}`);
-//});
-
-if (process.env.NODE_ENV === 'production') {
-  if (!process.env.PORT) {
-    console.error('Error: PORT environment variable is not set in production.');
-    process.exit(1);
-  }
-  app.listen(process.env.PORT, () => {
-    console.log(`Server running on port ${process.env.PORT}`);
-  });
-} else {
-  const PORT = process.env.PORT || 5002;
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+// For production: Catch-all route to serve the React app's index.html
+if (process.env.NODE_ENV === "production") {
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "build", "index.html"));
   });
 }
+
+// Start the server – in production, we require process.env.PORT to be set!
+if (!process.env.PORT) {
+  console.error("Error: PORT environment variable not set in production.");
+  process.exit(1);
+}
+const PORT = process.env.PORT;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
