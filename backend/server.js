@@ -32,10 +32,10 @@ app.use(cookieParser());
 
 // Azure SQL connection configuration
 const config = {
-  user: process.env.DB_USER,
-  password: process.env.DB_PASS,
-  server: process.env.DB_SERVER,
-  database: process.env.DB_NAME,
+  user: process.env.DB_USER,           
+  password: process.env.DB_PASS,      
+  server: process.env.DB_SERVER,        
+  database: process.env.DB_NAME,     
   port: Number(process.env.SQL_PORT) || 1433,
   options: {
     encrypt: true,
@@ -50,12 +50,12 @@ async function connectDB() {
     console.log("Connected to Azure SQL Database");
   } catch (error) {
     console.error("Database connection error:", error);
-    process.exit(1);  // Exit if the DB connection fails
+    process.exit(1); // Exit if the DB connection fails
   }
 }
 connectDB();
 
-// Ensure DB is connected
+// Middleware to ensure DB is connected
 app.use((req, res, next) => {
   if (!pool) return res.status(503).json({ error: "Database not connected" });
   next();
@@ -123,7 +123,7 @@ app.post("/login", async (req, res) => {
     if (!match) {
       return res.status(401).json({ error: "Invalid username or password." });
     }
-    // Use staff_number as the unique identifier if id is not present
+    // Use staff_number as unique identifier if no separate id exists
     const token = jwt.sign({ userId: user.staff_number }, process.env.JWT_SECRET, { expiresIn: "1h" });
     res.json({
       token,
@@ -221,8 +221,8 @@ app.delete("/logs/:id", async (req, res) => {
   }
 });
 
-// Start the Server
-const PORT = process.env.PORT || 5002;  // Ensure Azure's PORT is used when provided
+// Start the Server using Azure's PORT if provided
+const PORT = process.env.PORT || 5002;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
