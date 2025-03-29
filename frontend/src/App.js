@@ -7,6 +7,8 @@ import Dashboard from "./components/Dashboard";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import "./App.css";
 
+console.log("API URL:", process.env.REACT_APP_API_URL);
+
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
