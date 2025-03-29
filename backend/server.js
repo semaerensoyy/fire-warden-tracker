@@ -8,24 +8,26 @@ const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 
 const app = express();
+/////////////////////////////////////
+//const allowedOrigins = [
+//  "http://localhost:3000",
+//  "https://firewardentracker-apggb8hzfkfsbjf3.uksouth-01.azurewebsites.net"
+//];
 
-const allowedOrigins = [
-  "http://localhost:3000",
-  "https://firewardentracker-apggb8hzfkfsbjf3.uksouth-01.azurewebsites.net"
-];
-
-app.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) === -1) {
-      console.error(`CORS error: Origin ${origin} not allowed.`);
-      return callback(new Error("Not allowed by CORS"), false);
-    }
-    return callback(null, true);
-  },
-  credentials: true
-}));
+//app.use(cors({
+//  origin: function (origin, callback) {
+//    // Allow requests with no origin (like mobile apps or curl)
+//    if (!origin) return callback(null, true);
+//    if (allowedOrigins.indexOf(origin) === -1) {
+//      console.error(`CORS error: Origin ${origin} not allowed.`);
+//      return callback(new Error("Not allowed by CORS"), false);
+//    }
+//    return callback(null, true);
+//  },
+//  credentials: true
+//}));
+///////////////////////////////////////////////
+app.use(cors({ origin: "https://firewardentracker-apggb8hzfkfsbjf3.uksouth-01.azurewebsites.net", credentials: true }));
 
 app.use(express.json());
 app.use(cookieParser());

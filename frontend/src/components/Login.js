@@ -15,7 +15,7 @@ const Login = ({ onLogin }) => {
     e.preventDefault();
     setError(null);
     try {
-      const response = await axios.post(`${process.env.REACT_APP_API_URL}/login`, formData);
+      const response = await axios.post(`https://firewardentracker-apggb8hzfkfsbjf3.uksouth-01.azurewebsites.net/login`, formData);
       localStorage.setItem("token", response.data.token);
       localStorage.setItem("user", JSON.stringify(response.data.user));
       onLogin(response.data.token);

@@ -22,7 +22,7 @@ const Dashboard = () => {
 
   const fetchLogs = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/logs`);
+      const response = await axios.get(`https://firewardentracker-apggb8hzfkfsbjf3.uksouth-01.azurewebsites.net/logs`);
       setLogs(response.data);
     } catch (err) {
       console.error("Error fetching logs:", err);
@@ -33,10 +33,9 @@ const Dashboard = () => {
   useEffect(() => {
     fetchLogs();
   }, []);
-
   const deleteLog = async (id) => {
     try {
-      await axios.delete(`${process.env.REACT_APP_API_URL}/logs/${id}`);
+      await axios.delete(`https://firewardentracker-apggb8hzfkfsbjf3.uksouth-01.azurewebsites.net/logs/${id}`);
       setLogs(logs.filter((log) => log.id !== id));
       setSuccessMessage("Log deleted successfully!");
       setTimeout(() => setSuccessMessage(null), 3000);
@@ -57,7 +56,7 @@ const Dashboard = () => {
   const updateLog = async () => {
     try {
       const { id, staff_number, first_name, last_name, location } = editingLog;
-      await axios.put(`${process.env.REACT_APP_API_URL}/logs/${id}`, {
+      await axios.put(`https://firewardentracker-apggb8hzfkfsbjf3.uksouth-01.azurewebsites.net/logs/${id}`, {
         staff_number,
         first_name,
         last_name,
