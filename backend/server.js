@@ -8,10 +8,10 @@ const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 
 const app = express();
-////////////////
+
 const allowedOrigins = [
-  "http://localhost:3000",                   // Local development
-  "https://firewardentracker-apggb8hzfkfsbjf3.uksouth-01.azurewebsites.net"    // Replace with your actual frontend URL in production
+  "http://localhost:3000",
+  "https://firewardentracker-apggb8hzfkfsbjf3.uksouth-01.azurewebsites.net"
 ];
 
 app.use(cors({
@@ -20,24 +20,22 @@ app.use(cors({
     if (!origin) return callback(null, true);
     if (allowedOrigins.indexOf(origin) === -1) {
       console.error(`CORS error: Origin ${origin} not allowed.`);
-     return callback(new Error("Not allowed by CORS"), false);
+      return callback(new Error("Not allowed by CORS"), false);
     }
     return callback(null, true);
   },
   credentials: true
 }));
-/////////////////////
-//app.use(cors({ origin: "https://firewardentracker-apggb8hzfkfsbjf3.uksouth-01.azurewebsites.net", credentials: true }));
 
 app.use(express.json());
 app.use(cookieParser());
 
 // Azure SQL connection configuration
 const config = {
-  user: process.env.DB_USER,           
-  password: process.env.DB_PASS,      
-  server: process.env.DB_SERVER,        
-  database: process.env.DB_NAME,     
+  user: process.env.DB_USER,
+  password: process.env.DB_PASS,
+  server: process.env.DB_SERVER,
+  database: process.env.DB_NAME,
   port: Number(process.env.SQL_PORT) || 1433,
   options: {
     encrypt: true,
@@ -52,6 +50,7 @@ async function connectDB() {
     console.log("Connected to Azure SQL Database");
   } catch (error) {
     console.error("Database connection error:", error);
+    process.exit(1);  // Exit if the DB connection fails
   }
 }
 connectDB();
@@ -62,7 +61,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Generate an unique 4-digit staff number
+// Generate a unique 4-digit staff number
 app.get("/generate-staff-number", async (req, res) => {
   try {
     let staffNumber;
@@ -124,7 +123,8 @@ app.post("/login", async (req, res) => {
     if (!match) {
       return res.status(401).json({ error: "Invalid username or password." });
     }
-    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+    // Use staff_number as the unique identifier if id is not present
+    const token = jwt.sign({ userId: user.staff_number }, process.env.JWT_SECRET, { expiresIn: "1h" });
     res.json({
       token,
       user: {
@@ -177,7 +177,7 @@ app.post("/logs", async (req, res) => {
   }
 });
 
-// Update an existing log entry // Location and Time
+// Update an existing log entry
 app.put("/logs/:id", async (req, res) => {
   const { id } = req.params;
   const { staff_number, first_name, last_name, location } = req.body;
@@ -222,7 +222,7 @@ app.delete("/logs/:id", async (req, res) => {
 });
 
 // Start the Server
-const PORT = process.env.PORT || 5002;
+const PORT = process.env.PORT || 5002;  // Ensure Azure's PORT is used when provided
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
