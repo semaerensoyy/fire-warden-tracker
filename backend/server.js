@@ -12,11 +12,6 @@ const path = require("path");
 
 const app = express();
 
-// Test endpoint to confirm Node.js is running
-app.get('/test', (req, res) => {
-  res.send('Node.js backend is running!');
-});
-
 // CORS configuration: allow requests from your public domain
 app.use(
   cors({
@@ -27,6 +22,11 @@ app.use(
 
 app.use(express.json());
 app.use(cookieParser());
+
+// Test endpoint to confirm Node.js is running
+app.get('/test', (req, res) => {
+  res.send('Node.js backend is running!');
+});
 
 // Serve static files from the React build folder in production
 if (process.env.NODE_ENV === "production") {
