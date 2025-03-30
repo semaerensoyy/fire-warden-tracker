@@ -42,12 +42,17 @@ if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "build")));
 }
 
+// Log environment variables (for debugging; remove sensitive info later)
+console.log("DB_USER:", process.env.DB_USER);
+console.log("DB_SERVER:", process.env.DB_SERVER);
+console.log("DB_NAME:", process.env.DB_NAME);
+
 // Configure Azure SQL connection using environment variables
 const config = {
-  user: process.env.DB_USER,         // e.g., your DB username
-  password: process.env.DB_PASS,       // e.g., your DB password
-  server: process.env.DB_SERVER,       // e.g., your Azure SQL server hostname
-  database: process.env.DB_NAME,       // e.g., your DB name
+  user: process.env.DB_USER,
+  password: process.env.DB_PASS,
+  server: process.env.DB_SERVER,
+  database: process.env.DB_NAME,
   port: Number(process.env.SQL_PORT) || 1433,
   options: {
     encrypt: true,
@@ -64,22 +69,26 @@ async function connectDB() {
     console.log("Connected to Azure SQL Database");
   } catch (error) {
     console.error("Database connection error:", error);
-    // Do not exit; the endpoints will check if pool exists and respond accordingly.
+    // Do not exit immediately; let endpoints try to run so we can see error responses.
+    // In production, you might want to exit or retry.
   }
 }
 connectDB();
 
-// Middleware: Ensure database connection is established for API endpoints
+// Commenting out this middleware temporarily for debugging DB connection issues
+/*
 app.use((req, res, next) => {
   if (!pool) {
     return res.status(503).json({ error: "Database not connected" });
   }
   next();
 });
+*/
 
 // Endpoint: Generate a unique 4-digit staff number
 app.get("/generate-staff-number", async (req, res) => {
   try {
+    if (!pool) throw new Error("Database not connected");
     let staffNumber;
     let exists = true;
     do {
@@ -103,6 +112,7 @@ app.post("/register", async (req, res) => {
     return res.status(400).json({ error: "All fields are required" });
   }
   try {
+    if (!pool) throw new Error("Database not connected");
     const username = `${lastName}_${firstName.charAt(0)}_${staffNumber}`;
     const hashedPassword = await bcrypt.hash(password, 10);
     await pool.request()
@@ -128,6 +138,7 @@ app.post("/login", async (req, res) => {
   if (!username || !password)
     return res.status(400).json({ error: "All fields are required" });
   try {
+    if (!pool) throw new Error("Database not connected");
     const result = await pool.request()
       .input("username", sql.VarChar(100), username)
       .query("SELECT * FROM dbo.FireWardens WHERE username = @username");
