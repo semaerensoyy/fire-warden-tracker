@@ -1,4 +1,6 @@
-// Load environment variables
+// backend/server.js
+
+// Load environment variables and enable async errors
 require("dotenv").config();
 require("express-async-errors");
 
@@ -12,7 +14,7 @@ const path = require("path");
 
 const app = express();
 
-// Global error handlers
+// Global error handlers to log unexpected issues
 process.on("uncaughtException", (err) => {
   console.error("Uncaught Exception:", err);
 });
@@ -20,34 +22,32 @@ process.on("unhandledRejection", (reason, promise) => {
   console.error("Unhandled Rejection at:", promise, "reason:", reason);
 });
 
-// CORS configuration: allow requests from your public domain
-app.use(
-  cors({
-    origin: "https://firewardentracker-apggb8hzfkfsbjf3.uksouth-01.azurewebsites.net",
-    credentials: true,
-  })
-);
+// Configure CORS (adjust origin as needed)
+app.use(cors({
+  origin: "https://firewardentracker-apggb8hzfkfsbjf3.uksouth-01.azurewebsites.net",
+  credentials: true,
+}));
 
 app.use(express.json());
 app.use(cookieParser());
 
-// Test endpoint to confirm Node.js is running
+// Test endpoint to check that backend is running
 app.get("/test", (req, res) => {
   res.send("Node.js backend is running!");
 });
 
-// Serve static files from the React build folder in production
+// Serve static files from the React build folder when in production
 if (process.env.NODE_ENV === "production") {
-  console.log("Serving static files from /build");
+  console.log("Production mode: Serving static files from build folder");
   app.use(express.static(path.join(__dirname, "build")));
 }
 
-// Azure SQL connection configuration from environment variables
+// Azure SQL Database connection configuration
 const config = {
-  user: process.env.DB_USER,        // e.g., s.erensoy.22
-  password: process.env.DB_PASS,      // e.g., 04092002Sa
-  server: process.env.DB_SERVER,      // e.g., firewardenapp-server.database.windows.net
-  database: process.env.DB_NAME,      // e.g., firewarden_db
+  user: process.env.DB_USER,       // e.g., your DB username
+  password: process.env.DB_PASS,     // e.g., your DB password
+  server: process.env.DB_SERVER,     // e.g., your Azure SQL server hostname
+  database: process.env.DB_NAME,     // e.g., your DB name
   port: Number(process.env.SQL_PORT) || 1433,
   options: {
     encrypt: true,
@@ -67,13 +67,13 @@ async function connectDB() {
 }
 connectDB();
 
-// Middleware to check DB connectivity
+// Middleware to ensure database connectivity
 app.use((req, res, next) => {
   if (!pool) return res.status(503).json({ error: "Database not connected" });
   next();
 });
 
-// --- API Endpoints ---
+// API Endpoints
 
 // Generate a unique 4-digit staff number
 app.get("/generate-staff-number", async (req, res) => {
@@ -234,14 +234,14 @@ app.delete("/logs/:id", async (req, res) => {
   }
 });
 
-// Catch-all: Serve React's index.html for any other route in production
+// Catch-all route: serve React's index.html for all unmatched routes (production only)
 if (process.env.NODE_ENV === "production") {
   app.get("*", (req, res) => {
     res.sendFile(path.join(__dirname, "build", "index.html"));
   });
 }
 
-// Ensure we have a PORT in production
+// Start the server; require PORT to be set
 if (!process.env.PORT) {
   console.error("Error: PORT environment variable not set in production.");
   process.exit(1);
