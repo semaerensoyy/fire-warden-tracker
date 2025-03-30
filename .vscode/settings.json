@@ -1,4 +1,4 @@
 {
-    "appService.defaultWebAppToDeploy": "/subscriptions/c4d690d5-6181-49dd-bd11-4b8ad25c218a/resourceGroups/xx/providers/Microsoft.Web/sites/firewardentrackerr",
+    "appService.defaultWebAppToDeploy": "/subscriptions/c4d690d5-6181-49dd-bd11-4b8ad25c218a/resourceGroups/xx/providers/Microsoft.Web/sites/firewardentracker",
     "appService.deploySubpath": "."
 }
