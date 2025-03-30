@@ -12,6 +12,14 @@ const path = require("path");
 
 const app = express();
 
+// Global error handlers
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught Exception:", err);
+});
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("Unhandled Rejection at:", promise, "reason:", reason);
+});
+
 // CORS configuration: allow requests from your public domain
 app.use(
   cors({
@@ -24,21 +32,22 @@ app.use(express.json());
 app.use(cookieParser());
 
 // Test endpoint to confirm Node.js is running
-app.get('/test', (req, res) => {
-  res.send('Node.js backend is running!');
+app.get("/test", (req, res) => {
+  res.send("Node.js backend is running!");
 });
 
 // Serve static files from the React build folder in production
 if (process.env.NODE_ENV === "production") {
+  console.log("Serving static files from /build");
   app.use(express.static(path.join(__dirname, "build")));
 }
 
 // Azure SQL connection configuration from environment variables
 const config = {
-  user: process.env.DB_USER,               // e.g., s.erensoy.22
-  password: process.env.DB_PASS,           // e.g., 04092002Sa
-  server: process.env.DB_SERVER,           // e.g., firewardenapp-server.database.windows.net
-  database: process.env.DB_NAME,           // e.g., firewarden_db
+  user: process.env.DB_USER,        // e.g., s.erensoy.22
+  password: process.env.DB_PASS,      // e.g., 04092002Sa
+  server: process.env.DB_SERVER,      // e.g., firewardenapp-server.database.windows.net
+  database: process.env.DB_NAME,      // e.g., firewarden_db
   port: Number(process.env.SQL_PORT) || 1433,
   options: {
     encrypt: true,
@@ -232,12 +241,13 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
-// Ensure we have a PORT in production (Azure will set this automatically)
+// Ensure we have a PORT in production
 if (!process.env.PORT) {
   console.error("Error: PORT environment variable not set in production.");
   process.exit(1);
 }
 const PORT = process.env.PORT;
+console.log("Starting server on port:", PORT);
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
