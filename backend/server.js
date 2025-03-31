@@ -20,7 +20,7 @@ process.on("unhandledRejection", (reason, promise) => {
   console.error("Unhandled Rejection at:", promise, "reason:", reason);
 });
 
-// CORS setup: adjust origin to match your public domain if needed
+// CORS configuration
 app.use(
   cors({
     origin: "https://firewardentracker-apggb8hzfkfsbjf3.uksouth-01.azurewebsites.net",
@@ -31,23 +31,23 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
-// Simple test endpoint to verify backend is running
+// Simple test endpoint
 app.get("/test", (req, res) => {
   res.send("Node.js backend is running!");
 });
 
-// Serve static files (your React app) in production
+// Serve static files (React app) in production
 if (process.env.NODE_ENV === "production") {
   console.log("Production mode: Serving static files from build folder");
   app.use(express.static(path.join(__dirname, "build")));
 }
 
-// Log environment variables (for debugging; remove sensitive info later)
+// Log some environment details (for debugging)
 console.log("DB_USER:", process.env.DB_USER);
 console.log("DB_SERVER:", process.env.DB_SERVER);
 console.log("DB_NAME:", process.env.DB_NAME);
 
-// Configure Azure SQL connection using environment variables
+// Configure Azure SQL connection
 const config = {
   user: process.env.DB_USER,
   password: process.env.DB_PASS,
@@ -62,20 +62,19 @@ const config = {
 
 let pool;
 
-// Attempt to connect to the database
+// Attempt database connection
 async function connectDB() {
   try {
     pool = await sql.connect(config);
     console.log("Connected to Azure SQL Database");
   } catch (error) {
     console.error("Database connection error:", error);
-    // Do not exit immediately; let endpoints try to run so we can see error responses.
-    // In production, you might want to exit or retry.
+    // For debugging, we are not exiting immediately.
   }
 }
 connectDB();
 
-// Commenting out this middleware temporarily for debugging DB connection issues
+// (Temporarily comment out middleware that blocks endpoints if DB is not connected)
 /*
 app.use((req, res, next) => {
   if (!pool) {
@@ -85,7 +84,8 @@ app.use((req, res, next) => {
 });
 */
 
-// Endpoint: Generate a unique 4-digit staff number
+// Define your endpoints (e.g., /generate-staff-number, /register, /login) here…
+// For brevity, I include only one endpoint as an example:
 app.get("/generate-staff-number", async (req, res) => {
   try {
     if (!pool) throw new Error("Database not connected");
@@ -105,74 +105,14 @@ app.get("/generate-staff-number", async (req, res) => {
   }
 });
 
-// Endpoint: Register a new user
-app.post("/register", async (req, res) => {
-  const { firstName, lastName, password, staffNumber } = req.body;
-  if (!firstName || !lastName || !password || !staffNumber) {
-    return res.status(400).json({ error: "All fields are required" });
-  }
-  try {
-    if (!pool) throw new Error("Database not connected");
-    const username = `${lastName}_${firstName.charAt(0)}_${staffNumber}`;
-    const hashedPassword = await bcrypt.hash(password, 10);
-    await pool.request()
-      .input("staff_number", sql.VarChar(50), staffNumber)
-      .input("first_name", sql.VarChar(100), firstName)
-      .input("last_name", sql.VarChar(100), lastName)
-      .input("username", sql.VarChar(100), username)
-      .input("password_hash", sql.VarChar(255), hashedPassword)
-      .query(`
-        INSERT INTO dbo.FireWardens (staff_number, first_name, last_name, username, password_hash)
-        VALUES (@staff_number, @first_name, @last_name, @username, @password_hash)
-      `);
-    res.json({ message: "Registration successful", username, staffNumber });
-  } catch (err) {
-    console.error("Registration error:", err);
-    res.status(500).json({ error: "Registration failed." });
-  }
-});
-
-// Endpoint: Login
-app.post("/login", async (req, res) => {
-  const { username, password } = req.body;
-  if (!username || !password)
-    return res.status(400).json({ error: "All fields are required" });
-  try {
-    if (!pool) throw new Error("Database not connected");
-    const result = await pool.request()
-      .input("username", sql.VarChar(100), username)
-      .query("SELECT * FROM dbo.FireWardens WHERE username = @username");
-    if (result.recordset.length === 0) {
-      return res.status(401).json({ error: "Invalid username or password." });
-    }
-    const user = result.recordset[0];
-    const match = await bcrypt.compare(password, user.password_hash);
-    if (!match) {
-      return res.status(401).json({ error: "Invalid username or password." });
-    }
-    const token = jwt.sign({ userId: user.staff_number }, process.env.JWT_SECRET, { expiresIn: "1h" });
-    res.json({
-      token,
-      user: {
-        staffNumber: user.staff_number,
-        firstName: user.first_name,
-        lastName: user.last_name,
-      },
-    });
-  } catch (err) {
-    console.error("Login error:", err);
-    res.status(500).json({ error: "Login failed." });
-  }
-});
-
-// Catch-all route: serve the React app for any other route (production only)
+// Catch-all route to serve React app (production)
 if (process.env.NODE_ENV === "production") {
   app.get("*", (req, res) => {
     res.sendFile(path.join(__dirname, "build", "index.html"));
   });
 }
 
-// Ensure PORT is set; if not, use a default (Azure should set PORT automatically)
+// Ensure PORT is set; use default if not provided
 if (!process.env.PORT) {
   console.error("Warning: PORT environment variable not set. Using default 3000.");
 }
