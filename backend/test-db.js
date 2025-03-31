@@ -11,6 +11,7 @@ const config = {
   options: {
     encrypt: true,
     enableArithAbort: true,
+    connectionTimeout: 30000
   },
 };
 
