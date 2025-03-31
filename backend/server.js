@@ -123,7 +123,7 @@ app.put("/logs/:id", async (req, res) => {
     await pool.request()
       .input("id", sql.Int, id)
       .input("location", sql.VarChar(255), location)
-      .query("UPDATE dbo.WardenLogs SET location = @location WHERE id = @id");
+      .query("UPDATE dbo.WardenLogs SET location = @location, timestamp = GETDATE() WHERE id = @id");
     res.json({ message: "Log updated successfully" });
   } catch (err) {
     console.error("Error updating log:", err.message);
