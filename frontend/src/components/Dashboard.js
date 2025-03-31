@@ -56,9 +56,8 @@ const Dashboard = () => {
 
   const updateLog = async () => {
     try {
-      // Destructure properties except for id (we'll get id directly)
       const { staff_number, first_name, last_name, location } = editingLog;
-      const logId = editingLog.id; // get id directly from editingLog
+      const logId = editingLog.id;
       await axios.put("https://firewardentracker-apggb8hzfkfsbjf3.uksouth-01.azurewebsites.net/logs/" + logId, {
         staff_number,
         first_name,

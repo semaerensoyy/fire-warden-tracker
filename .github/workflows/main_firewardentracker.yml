@@ -13,7 +13,7 @@ jobs:
       # 1. Checkout repository
       - uses: actions/checkout@v4
 
-      # 2. Set up Node.js (for both frontend and backend builds)
+      # 2. Set up Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
@@ -37,13 +37,13 @@ jobs:
       - name: Copy Frontend Build to Backend
         run: cp -R frontend/build backend/
 
-      # 6. Prepare Deployment Package (combine backend code and build folder)
+      # 6. Prepare Deployment Package
       - name: Prepare Deployment Package
         run: |
           mkdir deploy-package
           cp -R backend/* deploy-package/
 
-      # 7. Debug: List contents of the deployment package (optional)
+      # 7. Debug: List contents of the deployment package
       - name: Debug - List Deployment Package Contents
         run: ls -la deploy-package
 
@@ -76,5 +76,5 @@ jobs:
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'firewardentracker'      # Your Azure Web App name
+          app-name: 'firewardentracker'      
           package: deploy-package
