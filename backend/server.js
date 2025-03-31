@@ -74,6 +74,78 @@ async function connectDB() {
 }
 connectDB();
 
+// Endpoint: Log a new location
+app.post("/logs", async (req, res) => {
+  try {
+    if (!pool) throw new Error("Database not connected");
+    const { staffNumber, firstName, lastName, location } = req.body;
+    if (!staffNumber || !firstName || !lastName || !location) {
+      return res.status(400).json({ error: "All fields are required" });
+    }
+    await pool.request()
+      .input("staff_number", sql.VarChar(50), staffNumber)
+      .input("first_name", sql.VarChar(100), firstName)
+      .input("last_name", sql.VarChar(100), lastName)
+      .input("location", sql.VarChar(255), location)
+      .query(`
+        INSERT INTO dbo.Logs (staff_number, first_name, last_name, location, timestamp)
+        VALUES (@staff_number, @first_name, @last_name, @location, GETDATE())
+      `);
+    res.json({ message: "Location logged successfully" });
+  } catch (err) {
+    console.error("Error logging location:", err.message);
+    res.status(500).json({ error: "Failed to log location." });
+  }
+});
+
+// Endpoint: Retrieve all logs
+app.get("/logs", async (req, res) => {
+  try {
+    if (!pool) throw new Error("Database not connected");
+    const result = await pool.request()
+      .query("SELECT * FROM dbo.Logs ORDER BY timestamp DESC");
+    res.json(result.recordset);
+  } catch (err) {
+    console.error("Error retrieving logs:", err.message);
+    res.status(500).json({ error: "Failed to retrieve logs." });
+  }
+});
+
+// Endpoint: Update a log entry
+app.put("/logs/:id", async (req, res) => {
+  try {
+    if (!pool) throw new Error("Database not connected");
+    const { id } = req.params;
+    const { location } = req.body;
+    if (!location) {
+      return res.status(400).json({ error: "Location is required" });
+    }
+    await pool.request()
+      .input("id", sql.Int, id)
+      .input("location", sql.VarChar(255), location)
+      .query("UPDATE dbo.Logs SET location = @location WHERE id = @id");
+    res.json({ message: "Log updated successfully" });
+  } catch (err) {
+    console.error("Error updating log:", err.message);
+    res.status(500).json({ error: "Failed to update log." });
+  }
+});
+
+// Endpoint: Delete a log entry
+app.delete("/logs/:id", async (req, res) => {
+  try {
+    if (!pool) throw new Error("Database not connected");
+    const { id } = req.params;
+    await pool.request()
+      .input("id", sql.Int, id)
+      .query("DELETE FROM dbo.Logs WHERE id = @id");
+    res.json({ message: "Log deleted successfully" });
+  } catch (err) {
+    console.error("Error deleting log:", err.message);
+    res.status(500).json({ error: "Failed to delete log." });
+  }
+});
+
 // Example endpoint: Generate a unique 4-digit staff number
 app.get("/generate-staff-number", async (req, res) => {
   try {
