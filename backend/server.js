@@ -5,7 +5,7 @@ require("express-async-errors");
 const express = require("express");
 const cors = require("cors");
 const sql = require("mssql");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs"); // Changed from bcrypt to bcryptjs
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 const path = require("path");
@@ -42,7 +42,7 @@ if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "build")));
 }
 
-// Log some environment details (for debugging)
+// Log environment variables (for debugging; remove sensitive info later)
 console.log("DB_USER:", process.env.DB_USER);
 console.log("DB_SERVER:", process.env.DB_SERVER);
 console.log("DB_NAME:", process.env.DB_NAME);
@@ -74,18 +74,7 @@ async function connectDB() {
 }
 connectDB();
 
-// (Temporarily comment out middleware that blocks endpoints if DB is not connected)
-/*
-app.use((req, res, next) => {
-  if (!pool) {
-    return res.status(503).json({ error: "Database not connected" });
-  }
-  next();
-});
-*/
-
-// Define your endpoints (e.g., /generate-staff-number, /register, /login) here…
-// For brevity, I include only one endpoint as an example:
+// Example endpoint: Generate a unique 4-digit staff number
 app.get("/generate-staff-number", async (req, res) => {
   try {
     if (!pool) throw new Error("Database not connected");
@@ -105,14 +94,74 @@ app.get("/generate-staff-number", async (req, res) => {
   }
 });
 
-// Catch-all route to serve React app (production)
+// Endpoint: Register a new user
+app.post("/register", async (req, res) => {
+  const { firstName, lastName, password, staffNumber } = req.body;
+  if (!firstName || !lastName || !password || !staffNumber) {
+    return res.status(400).json({ error: "All fields are required" });
+  }
+  try {
+    if (!pool) throw new Error("Database not connected");
+    const username = `${lastName}_${firstName.charAt(0)}_${staffNumber}`;
+    const hashedPassword = await bcrypt.hash(password, 10); // Using bcryptjs
+    await pool.request()
+      .input("staff_number", sql.VarChar(50), staffNumber)
+      .input("first_name", sql.VarChar(100), firstName)
+      .input("last_name", sql.VarChar(100), lastName)
+      .input("username", sql.VarChar(100), username)
+      .input("password_hash", sql.VarChar(255), hashedPassword)
+      .query(`
+        INSERT INTO dbo.FireWardens (staff_number, first_name, last_name, username, password_hash)
+        VALUES (@staff_number, @first_name, @last_name, @username, @password_hash)
+      `);
+    res.json({ message: "Registration successful", username, staffNumber });
+  } catch (err) {
+    console.error("Registration error:", err);
+    res.status(500).json({ error: "Registration failed." });
+  }
+});
+
+// Endpoint: Login
+app.post("/login", async (req, res) => {
+  const { username, password } = req.body;
+  if (!username || !password)
+    return res.status(400).json({ error: "All fields are required" });
+  try {
+    if (!pool) throw new Error("Database not connected");
+    const result = await pool.request()
+      .input("username", sql.VarChar(100), username)
+      .query("SELECT * FROM dbo.FireWardens WHERE username = @username");
+    if (result.recordset.length === 0) {
+      return res.status(401).json({ error: "Invalid username or password." });
+    }
+    const user = result.recordset[0];
+    const match = await bcrypt.compare(password, user.password_hash); // Using bcryptjs
+    if (!match) {
+      return res.status(401).json({ error: "Invalid username or password." });
+    }
+    const token = jwt.sign({ userId: user.staff_number }, process.env.JWT_SECRET, { expiresIn: "1h" });
+    res.json({
+      token,
+      user: {
+        staffNumber: user.staff_number,
+        firstName: user.first_name,
+        lastName: user.last_name,
+      },
+    });
+  } catch (err) {
+    console.error("Login error:", err);
+    res.status(500).json({ error: "Login failed." });
+  }
+});
+
+// Catch-all route to serve React app in production
 if (process.env.NODE_ENV === "production") {
   app.get("*", (req, res) => {
     res.sendFile(path.join(__dirname, "build", "index.html"));
   });
 }
 
-// Ensure PORT is set; use default if not provided
+// Use default PORT if not set (Azure should set PORT automatically)
 if (!process.env.PORT) {
   console.error("Warning: PORT environment variable not set. Using default 3000.");
 }
