@@ -88,7 +88,7 @@ app.post("/logs", async (req, res) => {
       .input("last_name", sql.VarChar(100), lastName)
       .input("location", sql.VarChar(255), location)
       .query(`
-        INSERT INTO dbo.Logs (staff_number, first_name, last_name, location, timestamp)
+        INSERT INTO dbo.WardenLogs (staff_number, first_name, last_name, location, timestamp)
         VALUES (@staff_number, @first_name, @last_name, @location, GETDATE())
       `);
     res.json({ message: "Location logged successfully" });
@@ -103,7 +103,7 @@ app.get("/logs", async (req, res) => {
   try {
     if (!pool) throw new Error("Database not connected");
     const result = await pool.request()
-      .query("SELECT * FROM dbo.Logs ORDER BY timestamp DESC");
+      .query("SELECT * FROM dbo.WardenLogs ORDER BY timestamp DESC");
     res.json(result.recordset);
   } catch (err) {
     console.error("Error retrieving logs:", err.message);
@@ -123,7 +123,7 @@ app.put("/logs/:id", async (req, res) => {
     await pool.request()
       .input("id", sql.Int, id)
       .input("location", sql.VarChar(255), location)
-      .query("UPDATE dbo.Logs SET location = @location WHERE id = @id");
+      .query("UPDATE dbo.WardenLogs SET location = @location WHERE id = @id");
     res.json({ message: "Log updated successfully" });
   } catch (err) {
     console.error("Error updating log:", err.message);
@@ -138,7 +138,7 @@ app.delete("/logs/:id", async (req, res) => {
     const { id } = req.params;
     await pool.request()
       .input("id", sql.Int, id)
-      .query("DELETE FROM dbo.Logs WHERE id = @id");
+      .query("DELETE FROM dbo.WardenLogs WHERE id = @id");
     res.json({ message: "Log deleted successfully" });
   } catch (err) {
     console.error("Error deleting log:", err.message);
